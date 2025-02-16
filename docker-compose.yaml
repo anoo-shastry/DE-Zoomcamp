@@ -6,7 +6,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=ny_taxi
     volumes:
-      - /Users/anoodeep/Documents/Study_Materials/DE_Zoomcamp/ny_taxi_postgres_data:/var/lib/postgresql/data:rw
+      - ./ny_taxi_postgres_data:/var/lib/postgresql/data:rw
     ports:
       - 5433:5432
   pgadmin:
@@ -15,6 +15,6 @@ services:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=root
     volumes:
-      - /Users/anoodeep/Documents/Study_Materials/DE_Zoomcamp/pgadmin_data:/var/lib/pgadmin:rw
+      - ./pgadmin_data:/var/lib/pgadmin:rw
     ports:
       - 8080:80
