@@ -1,0 +1,7 @@
+id: 00_hello_world
+namespace: tutorial
+
+tasks:
+  - id: message
+    type: io.kestra.plugin.core.log.Log
+    message: Hello World!! 🚀

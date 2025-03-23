@@ -1,0 +1,19 @@
+id: 01_github_stars
+namespace: tutorial
+
+tasks:
+  - id: python_script
+    type: io.kestra.plugin.scripts.python.Script
+    beforeCommands:
+      - pip install requests kestra
+    script: |
+      import requests
+      from kestra import Kestra
+
+      resp = requests.get('https://api.github.com/repos/kestra-io/kestra')
+      gh_stars = resp.json()['stargazers_count']
+      Kestra.outputs({'gh_stars': gh_stars})
+
+  - id: python_output
+    type: io.kestra.plugin.core.log.Log
+    message: "Total number of stars: {{outputs.python_script.vars.gh_stars}}"

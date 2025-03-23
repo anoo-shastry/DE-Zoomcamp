@@ -39,10 +39,10 @@ def ingest_data(params):
     print(pd.io.sql.get_schema(df, name=table))
 
     # create a table in the database
-    df.head(n=0).to_sql(name=table, con=engine, if_exists='replace')
+    df.head(n=0).to_sql(name=table, con=engine, if_exists='replace', index=False)
     # write data to a table
     t_start = time()
-    df.to_sql(name=table, con=engine, if_exists='replace', chunksize=10000)
+    df.to_sql(name=table, con=engine, if_exists='replace', chunksize=10000, index=False)
     t_end = time()
     print(f'Total time taken to write to the database: {t_end - t_start:.2f} seconds')
 

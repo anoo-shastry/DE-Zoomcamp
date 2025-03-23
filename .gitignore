@@ -171,8 +171,7 @@ cython_debug/
 .pypirc
 
 # volume mounts for docker images
-ny_taxi_postgres_data/
-pgadmin_data/
+volumes/
 
 # Local .terraform directories
 **/.terraform/*
