@@ -1,8 +1,9 @@
 services:
-  postgres:
+  kestra-metadata:
     image: postgres:17.4 # latest image at the time of this commit
+    container_name: kestra-metadata
     volumes:
-      - ./volumes/kestra_psql:/var/lib/postgresql/data:rw
+      - ./docker_volumes/kestra_psql:/var/lib/postgresql/data:rw
     environment:
       POSTGRES_DB: kestra
       POSTGRES_USER: kestra
@@ -16,18 +17,19 @@ services:
 
   kestra:
     image: kestra/kestra:v0.21.7 # latest image at the time of this commit
-    # pull_policy: always
+    container_name: kestra
     user: root
     command: server standalone
     volumes:
-      - ./volumes/kestra_data:/app/storage:rw
+      - ./docker_volumes/kestra_data:/app/storage:rw
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
     environment:
+      JAVA_OPTS: "-XX:UseSVE=0"
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:
-            url: jdbc:postgresql://postgres:5432/kestra
+            url: jdbc:postgresql://kestra-metadata:5432/kestra
             driverClassName: org.postgresql.Driver
             username: kestra
             password: k3str4
@@ -55,32 +57,45 @@ services:
       - 8080:8080
       - 8081:8081
     depends_on:
-      postgres:
-        condition: service_started
+      kestra-metadata:
+        condition: service_healthy
 
-  postgres_zoomcamp:
+  postgres-zoomcamp:
     image: postgres:17.4 # latest image at the time of this commit
+    container_name: postgres-zoomcamp
     environment:
-      POSTGRES_USER: kestra
-      POSTGRES_PASSWORD: k3str4
-      POSTGRES_DB: postgres_zoomcamp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ny_taxi
     ports:
       - 5433:5432
     volumes:
-      - ./volumes/psql_data:/var/lib/postgresql/data:rw
-    depends_on:
-      kestra:
-        condition: service_started
+      - ./docker_volumes/psql_data:/var/lib/postgresql/data:rw
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: on-failure
 
   pgadmin:
     image: dpage/pgadmin4:9.1.0 # latest image at the time of this commit
+    container_name: pgadmin
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=root
     volumes:
-      - ./volumes/pgadmin_data:/var/lib/pgadmin:rw
+      - ./docker_volumes/pgadmin_data:/var/lib/pgadmin:rw
     ports:
-      - 8082:80
+      - 9000:80
+    healthcheck:
+      test: ["CMD-SHELL", "nc -zv localhost 80"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: on-failure:5
     depends_on:
-      postgres_zoomcamp:
-        condition: service_started
+      postgres-zoomcamp:
+        condition: service_healthy

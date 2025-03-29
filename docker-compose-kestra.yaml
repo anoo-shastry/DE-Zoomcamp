@@ -2,13 +2,11 @@ services:
   postgres:
     image: postgres:17.4 # latest image at the time of this commit
     volumes:
-      - ./volumes/kestra_psql:/var/lib/postgresql/data:rw
+      - ./docker_volumes/kestra_psql:/var/lib/postgresql/data:rw
     environment:
       POSTGRES_DB: kestra
       POSTGRES_USER: kestra
       POSTGRES_PASSWORD: k3str4
-    ports:
-      - 5434:5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 30s
@@ -22,7 +20,7 @@ services:
     user: root
     command: server standalone
     volumes:
-      - ./volumes/kestra_data:/app/storage:rw
+      - ./docker_volumes/kestra_data:/app/storage:rw
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
     environment:

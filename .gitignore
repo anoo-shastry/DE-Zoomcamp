@@ -171,7 +171,7 @@ cython_debug/
 .pypirc
 
 # volume mounts for docker images
-volumes/
+docker_volumes/
 
 # Local .terraform directories
 **/.terraform/*
