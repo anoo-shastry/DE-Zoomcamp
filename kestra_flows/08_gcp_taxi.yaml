@@ -6,20 +6,20 @@ description: |
 inputs:
   - id: taxi
     type: SELECT
-    displayName: Select taxi type
+    displayName: 'Select taxi type:'
     values: [yellow, green]
     defaults: green
 
   - id: year
     type: SELECT
-    displayName: Select year
+    displayName: 'Select year:'
     values: ["2019", "2020"]
     defaults: "2019"
-    allowCustomValue: true # allows you to type 2021 from the UI for the homework 🤗
+    allowCustomValue: true # allows you to type 2021 from the UI for the homework
 
   - id: month
     type: SELECT
-    displayName: Select month
+    displayName: 'Select month:'
     values: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
     defaults: "01"
 
@@ -242,7 +242,7 @@ tasks:
 pluginDefaults:
   - type: io.kestra.plugin.gcp
     values:
-      serviceAccount: "{{kv('GCP_CREDS')}}"
+      serviceAccount: "{{kv('GCP_KESTRA_SVC_ACC')}}"
       projectId: "{{kv('GCP_PROJECT_ID')}}"
       location: "{{kv('GCP_LOCATION')}}"
       bucket: "{{kv('GCP_BUCKET_NAME')}}"

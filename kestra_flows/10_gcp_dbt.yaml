@@ -26,7 +26,7 @@ tasks:
     namespace: "{{flow.namespace}}"
     gitDirectory: 04-analytics-engineering/taxi_rides_ny
     dryRun: false
-    # disabled: true # this Git Sync is needed only when running it the first time, afterwards the task can be disabled
+    disabled: false # this Git Sync is needed only when running it the first time, afterwards the task can be disabled
 
   - id: dbt-build
     type: io.kestra.plugin.dbt.cli.DbtCLI
@@ -39,7 +39,7 @@ tasks:
     taskRunner:
       type: io.kestra.plugin.scripts.runner.docker.Docker
     inputFiles:
-      sa.json: "{{kv('GCP_CREDS')}}"
+      sa.json: "{{kv('GCP_KESTRA_SVC_ACC')}}"
     commands:
       - dbt deps
       - "{{ inputs.dbt_command }}"

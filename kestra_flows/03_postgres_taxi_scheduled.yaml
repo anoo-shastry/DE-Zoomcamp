@@ -1,34 +1,26 @@
-id: 03_postgres_taxi
+id: 03_postgres_taxi_scheduled
 namespace: zoomcamp
 description: |
-  This data pipeline is for downloading the New York taxi data from a GitHub repository and wrtie it a
-  PostgreSQL database.
-  The CSV Data used in the course: https://github.com/DataTalksClub/nyc-tlc-data/releases
+  This data pipeline is to download the New York taxi data from a GitHub repository and wrtie it a
+  PostgreSQL database using backfills.
+  Best to add a label `backfill:true` from the UI to track executions created via a backfill.
+  CSV data used here comes from: https://github.com/DataTalksClub/nyc-tlc-data/releases
+
+concurrency:
+  limit: 1
 
 inputs:
   - id: taxi
     type: SELECT
     displayName: 'Select taxi type:'
-    values: [yellow, green]
-    defaults: yellow
-
-  - id: year
-    type: SELECT
-    displayName: 'Select year:'
-    values: ["2019", "2020"]
-    defaults: "2019"
-
-  - id: month
-    type: SELECT
-    displayName: 'Select month:'
-    values: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
-    defaults: "01"
+    values: [green, yellow]
+    defaults: green
 
 variables:
-  file: "{{inputs.taxi}}_tripdata_{{inputs.year}}-{{inputs.month}}.csv"
+  file: "{{inputs.taxi}}_tripdata_{{trigger.date | date('yyyy-MM')}}.csv"
   staging_table: "public.{{inputs.taxi}}_tripdata_staging"
   table: "public.{{inputs.taxi}}_tripdata"
-  data: "{{outputs.extract.outputFiles[inputs.taxi ~ '_tripdata_' ~ inputs.year ~ '-' ~ inputs.month ~ '.csv']}}"
+  data: "{{outputs.extract.outputFiles[inputs.taxi ~ '_tripdata_' ~ (trigger.date | date('yyyy-MM')) ~ '.csv']}}"
 
 tasks:
   - id: set_label
@@ -300,8 +292,7 @@ tasks:
 
   - id: purge_files
     type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
-    description: This will remove output files. If you'd like to explore Kestra outputs, disable it.
-    disabled: false # example for how to disable a stage
+    description: To avoid cluttering your storage, we will remove the downloaded files
 
 pluginDefaults:
   - type: io.kestra.plugin.jdbc.postgresql
@@ -309,3 +300,16 @@ pluginDefaults:
       url: jdbc:postgresql://postgres-zoomcamp:5432/ny_taxi
       username: postgres
       password: postgres
+
+triggers:
+  - id: green_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 9 1 * *" # first day of the month at 9:00 AM
+    inputs:
+      taxi: green
+
+  - id: yellow_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 10 1 * *" # first day of the month at 10:00 AM
+    inputs:
+      taxi: yellow

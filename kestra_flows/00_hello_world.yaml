@@ -1,5 +1,6 @@
 id: 00_hello_world
 namespace: tutorial
+description: Getting started with Kestra
 
 tasks:
   - id: message

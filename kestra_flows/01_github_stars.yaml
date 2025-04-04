@@ -1,5 +1,6 @@
 id: 01_github_stars
 namespace: tutorial
+description: This pipeline prints the number of Github Stars for 'kestra' repository
 
 tasks:
   - id: python_script

@@ -1,12 +1,13 @@
 id: 06_gcp_kv
 namespace: zoomcamp
+description: This pipeline is to place the GCP project details into the Kestra Key Vault
 
 tasks:
   - id: gcp_project_id
     type: io.kestra.plugin.core.kv.Set
     key: GCP_PROJECT_ID
     kvType: STRING
-    value: kestra-sandbox # TODO replace with your project id
+    value: de-zoomcamp-anshas
 
   - id: gcp_location
     type: io.kestra.plugin.core.kv.Set
@@ -18,10 +19,10 @@ tasks:
     type: io.kestra.plugin.core.kv.Set
     key: GCP_BUCKET_NAME
     kvType: STRING
-    value: your-name-kestra # TODO make sure it's globally unique!
+    value: anshas-kestra-de-zoomcamp-bucket # make sure it's globally unique!
 
   - id: gcp_dataset
     type: io.kestra.plugin.core.kv.Set
     key: GCP_DATASET
     kvType: STRING
-    value: zoomcamp
+    value: anshas_de_zoomcamp

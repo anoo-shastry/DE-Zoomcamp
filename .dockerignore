@@ -1,3 +1,2 @@
 # docker volume mounts
-ny_taxi_postgres_data/
-pgadmin_data/
+docker_volumes/

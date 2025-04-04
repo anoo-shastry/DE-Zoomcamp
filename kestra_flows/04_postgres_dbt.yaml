@@ -1,16 +1,7 @@
-id: 05_postgres_dbt
+id: 04_postgres_dbt
 namespace: zoomcamp
 description: |
-  Note that you need to adjust the models/staging/schema.yml file to match your database and schema.
-  Select and edit that Namespace File from the UI. Save and run this flow.
-  Once https://github.com/DataTalksClub/data-engineering-zoomcamp/pull/565/files is merged, you can
-  ignore this note as it will be dynamically adjusted based on env variables.
-  ```yaml
-  sources:
-    - name: staging
-      database: postgres-zoomcamp
-      schema: public
-  ```
+  This pipeline will create some more tables
 
 inputs:
   - id: dbt_command
@@ -29,12 +20,12 @@ tasks:
     namespace: "{{ flow.namespace }}"
     gitDirectory: 04-analytics-engineering/taxi_rides_ny
     dryRun: false
-    # disabled: true # this Git Sync is needed only when running it the first time, afterwards the task can be disabled
+    disabled: true # this Git Sync is needed only when running it the first time, afterwards the task can be disabled
 
   - id: dbt-build
     type: io.kestra.plugin.dbt.cli.DbtCLI
     env:
-      DBT_DATABASE: postgres-zoomcamp
+      DBT_DATABASE: ny_taxi
       DBT_SCHEMA: public
     namespaceFiles:
       enabled: true
@@ -53,11 +44,12 @@ tasks:
         outputs:
           dev:
             type: postgres
-            host: host.docker.internal
-            user: kestra
-            password: k3str4
+            host: postgres-zoomcamp # docker container name will not work
+            host: 172.18.0.3 # we have to give the container IP address
+            user: postgres
+            password: postgres
             port: 5432
-            dbname: postgres-zoomcamp
+            dbname: ny_taxi
             schema: public
             threads: 8
             connect_timeout: 10
