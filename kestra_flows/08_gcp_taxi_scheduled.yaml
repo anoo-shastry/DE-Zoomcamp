@@ -1,8 +1,9 @@
-id: 09_gcp_taxi_scheduled
+id: 08_gcp_taxi_scheduled
 namespace: zoomcamp
 description: |
-  Best to add a label `backfill:true` from the UI to track executions created via a backfill.
-  CSV data used here comes from: https://github.com/DataTalksClub/nyc-tlc-data/releases
+  This data pipeline is to download the New York taxi data from a GitHub repository and wrtie it to a BigQuery
+  using backfills.
+  The CSV Data used in the course: https://github.com/DataTalksClub/nyc-tlc-data/releases
 
 inputs:
   - id: taxi
@@ -118,6 +119,14 @@ tasks:
             *
           FROM `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}_ext`;
 
+      - id: bq_yellow_clean_up_tmp_table
+        # cleaning up the data that are outside the time range
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          DELETE FROM `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}`
+          WHERE EXTRACT(MONTH FROM tpep_pickup_datetime) != CAST('{{trigger.date | date('MM')}}' AS INTEGER)
+            OR EXTRACT(YEAR FROM tpep_pickup_datetime) != CAST('{{trigger.date | date('yyyy')}}' AS INTEGER);
+
       - id: bq_yellow_merge
         type: io.kestra.plugin.gcp.bigquery.Query
         sql: |
@@ -125,8 +134,56 @@ tasks:
           USING `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}` S
           ON T.unique_row_id = S.unique_row_id
           WHEN NOT MATCHED THEN
-            INSERT (unique_row_id, filename, VendorID, tpep_pickup_datetime, tpep_dropoff_datetime, passenger_count, trip_distance, RatecodeID, store_and_fwd_flag, PULocationID, DOLocationID, payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, total_amount, congestion_surcharge)
-            VALUES (S.unique_row_id, S.filename, S.VendorID, S.tpep_pickup_datetime, S.tpep_dropoff_datetime, S.passenger_count, S.trip_distance, S.RatecodeID, S.store_and_fwd_flag, S.PULocationID, S.DOLocationID, S.payment_type, S.fare_amount, S.extra, S.mta_tax, S.tip_amount, S.tolls_amount, S.improvement_surcharge, S.total_amount, S.congestion_surcharge);
+            INSERT (
+              unique_row_id,
+              filename,
+              VendorID,
+              tpep_pickup_datetime,
+              tpep_dropoff_datetime,
+              passenger_count,
+              trip_distance,
+              RatecodeID,
+              store_and_fwd_flag,
+              PULocationID,
+              DOLocationID,
+              payment_type,
+              fare_amount,
+              extra,
+              mta_tax,
+              tip_amount,
+              tolls_amount,
+              improvement_surcharge,
+              total_amount,
+              congestion_surcharge
+            )
+            VALUES (
+              S.unique_row_id,
+              S.filename,
+              S.VendorID,
+              S.tpep_pickup_datetime,
+              S.tpep_dropoff_datetime,
+              S.passenger_count,
+              S.trip_distance,
+              S.RatecodeID,
+              S.store_and_fwd_flag,
+              S.PULocationID,
+              S.DOLocationID,
+              S.payment_type,
+              S.fare_amount,
+              S.extra,
+              S.mta_tax,
+              S.tip_amount,
+              S.tolls_amount,
+              S.improvement_surcharge,
+              S.total_amount,
+              S.congestion_surcharge
+            );
+
+      - id: bq_yellow_table_cleanup
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          DROP TABLE `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}_ext`;
+          DROP TABLE `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}`;
 
   - id: if_green_taxi
     type: io.kestra.plugin.core.flow.If
@@ -212,6 +269,14 @@ tasks:
             *
           FROM `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}_ext`;
 
+      - id: bq_green_clean_up_tmp_table
+        # cleaning up the data that are outside the time range
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          DELETE FROM `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}`
+          WHERE EXTRACT(MONTH FROM lpep_pickup_datetime) != CAST('{{trigger.date | date('MM')}}' AS INTEGER)
+            OR EXTRACT(YEAR FROM lpep_pickup_datetime) != CAST('{{trigger.date | date('yyyy')}}' AS INTEGER);
+
       - id: bq_green_merge
         type: io.kestra.plugin.gcp.bigquery.Query
         sql: |
@@ -219,8 +284,60 @@ tasks:
           USING `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}` S
           ON T.unique_row_id = S.unique_row_id
           WHEN NOT MATCHED THEN
-            INSERT (unique_row_id, filename, VendorID, lpep_pickup_datetime, lpep_dropoff_datetime, store_and_fwd_flag, RatecodeID, PULocationID, DOLocationID, passenger_count, trip_distance, fare_amount, extra, mta_tax, tip_amount, tolls_amount, ehail_fee, improvement_surcharge, total_amount, payment_type, trip_type, congestion_surcharge)
-            VALUES (S.unique_row_id, S.filename, S.VendorID, S.lpep_pickup_datetime, S.lpep_dropoff_datetime, S.store_and_fwd_flag, S.RatecodeID, S.PULocationID, S.DOLocationID, S.passenger_count, S.trip_distance, S.fare_amount, S.extra, S.mta_tax, S.tip_amount, S.tolls_amount, S.ehail_fee, S.improvement_surcharge, S.total_amount, S.payment_type, S.trip_type, S.congestion_surcharge);
+            INSERT (
+              unique_row_id,
+              filename,
+              VendorID,
+              lpep_pickup_datetime,
+              lpep_dropoff_datetime,
+              store_and_fwd_flag,
+              RatecodeID,
+              PULocationID,
+              DOLocationID,
+              passenger_count,
+              trip_distance,
+              fare_amount,
+              extra,
+              mta_tax,
+              tip_amount,
+              tolls_amount,
+              ehail_fee,
+              improvement_surcharge,
+              total_amount,
+              payment_type,
+              trip_type,
+              congestion_surcharge
+            )
+            VALUES (
+              S.unique_row_id,
+              S.filename,
+              S.VendorID,
+              S.lpep_pickup_datetime,
+              S.lpep_dropoff_datetime,
+              S.store_and_fwd_flag,
+              S.RatecodeID,
+              S.PULocationID,
+              S.DOLocationID,
+              S.passenger_count,
+              S.trip_distance,
+              S.fare_amount,
+              S.extra,
+              S.mta_tax,
+              S.tip_amount,
+              S.tolls_amount,
+              S.ehail_fee,
+              S.improvement_surcharge,
+              S.total_amount,
+              S.payment_type,
+              S.trip_type,
+              S.congestion_surcharge
+            );
+
+      - id: bq_green_table_cleanup
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          DROP TABLE `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}_ext`;
+          DROP TABLE `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}`;
 
   - id: purge_files
     type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles

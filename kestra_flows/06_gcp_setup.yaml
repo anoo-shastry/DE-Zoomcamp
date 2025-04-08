@@ -1,6 +1,6 @@
-id: 07_gcp_setup
+id: 06_gcp_setup
 namespace: zoomcamp
-description: This workflow is to create a bucket in Google Cloud Platform
+description: This workflow will create buckets and datasets in Google Cloud Platform
 
 tasks:
   - id: create_gcs_bucket

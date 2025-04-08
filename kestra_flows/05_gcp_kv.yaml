@@ -1,6 +1,6 @@
-id: 06_gcp_kv
+id: 05_gcp_kv
 namespace: zoomcamp
-description: This pipeline is to place the GCP project details into the Kestra Key Vault
+description: This pipeline will place the GCP project details into the Kestra Key Vault
 
 tasks:
   - id: gcp_project_id

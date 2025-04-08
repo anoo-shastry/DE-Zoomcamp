@@ -44,7 +44,7 @@ tasks:
         outputs:
           dev:
             type: postgres
-            host: postgres-zoomcamp # docker container name will not work
+            # host: postgres-zoomcamp # docker container name will not work
             host: 172.18.0.3 # we have to give the container IP address
             user: postgres
             password: postgres
